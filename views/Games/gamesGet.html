@@ -1,0 +1,55 @@
+{% extends "_global/index.html" %}
+
+{% block main %}
+
+{% for allArmy in allArmies %}
+    <li>Army: {{ allArmy.name }} - current units: {{ allArmy.current_units }} - strategy: {{ allArmy.strategy }}</li>
+{% endfor %}
+
+<hr>
+
+<form method="post">
+    Name: <input type="text" name="name"><br>
+    Strategy:
+    <select name="strategy">
+        <option value="random">Random</option>
+        <option value="weakest">Weakest</option>
+        <option value="strongest">Strongest</option>
+    </select><br>
+    <input type="submit" name="createArmy" value="Create army">
+</form>
+
+<hr>
+
+{% if game.status != 'finished' %}
+
+Currently attacking: {{ currentlyAttacking.name }}<br>
+<span id="autorun" hidden>{{ currentlyAttacking.current_units }}</span>
+
+<form method="post">
+    <input type="submit" name="runAttack" id="runAttack" value="Run attack">
+</form>
+
+<hr>
+
+<form method="post">
+    <input type="submit" name="autorun" value="Autorun">
+</form>
+
+{% else %}
+
+Game is finished!
+
+{% endif %}
+
+{% block message %}{% endblock %}
+
+<!-- Autorun: reload time = current army units multiple by 0.01 -->
+{% if autorun.status == 'true' %}
+<script>
+    var autorun = document.getElementById("autorun").innerHTML;
+    setTimeout(function(){document.querySelector('#runAttack').click();},autorun*0.01);
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,7 @@
+vendor/
+twig-cache/
+session/
+assets/libs/
+doc/
+composer.lock
+.idea/

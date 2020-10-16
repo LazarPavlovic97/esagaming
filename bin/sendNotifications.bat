@@ -1,0 +1,1 @@
+wget.exe http://localhost/nedelja01/tasks/sendNotifications/iuhkughkgh4349857349857iuhkughkgh4349857349857iuhkughkgh43498574 -O-

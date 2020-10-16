@@ -1,0 +1,63 @@
+DROP TABLE army;
+CREATE TABLE army (army_id int NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, current_units int NOT NULL, strategy enum('random','weakest','strongest') NOT NULL, game_id int NOT NULL, PRIMARY KEY (army_id), CONSTRAINT army_ix1 UNIQUE (name, game_id), INDEX army_fk1 (game_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci;
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (1, '1A', 100, 'random', 1);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (2, '1B', 100, 'weakest', 1);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (3, '1C', 100, 'strongest', 1);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (4, 'Random', 90, 'random', 2);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (5, 'Weakest', 90, 'weakest', 2);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (6, 'Strongest', 90, 'strongest', 2);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (7, 'Test 1', 80, 'random', 3);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (8, 'Test 2', 80, 'weakest', 3);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (9, 'Test 3', 80, 'random', 3);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (10, 'Test 4', 80, 'strongest', 3);
+INSERT INTO army (army_id, name, current_units, strategy, game_id) VALUES (11, 'Test 5', 80, 'random', 3);
+DROP TABLE attack;
+CREATE TABLE attack (attack_id int NOT NULL AUTO_INCREMENT, army_id int NOT NULL, serial_number int NOT NULL, PRIMARY KEY (attack_id), CONSTRAINT attack_ix1 UNIQUE (army_id, serial_number)) ENGINE=InnoDB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci;
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (1, 1, 3);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (2, 2, 2);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (3, 3, 1);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (4, 4, 3);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (5, 5, 2);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (6, 6, 1);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (7, 7, 5);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (8, 8, 4);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (9, 9, 3);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (10, 10, 2);
+INSERT INTO attack (attack_id, army_id, serial_number) VALUES (11, 11, 1);
+DROP TABLE autorun;
+CREATE TABLE autorun (autorun_id int NOT NULL AUTO_INCREMENT, game_id int NOT NULL, status enum('true','false') DEFAULT 'false' NOT NULL, PRIMARY KEY (autorun_id), CONSTRAINT autorun_ix1 UNIQUE (game_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci;
+INSERT INTO autorun (autorun_id, game_id, status) VALUES (1, 1, 'false');
+INSERT INTO autorun (autorun_id, game_id, status) VALUES (2, 2, 'false');
+INSERT INTO autorun (autorun_id, game_id, status) VALUES (3, 3, 'false');
+DROP TABLE game;
+CREATE TABLE game (game_id int NOT NULL AUTO_INCREMENT, created_at timestamp DEFAULT CURRENT_TIMESTAMP, starting_units int NOT NULL, status enum('waiting for players','in progress','finished') DEFAULT 'waiting for players' NOT NULL, PRIMARY KEY (game_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci;
+INSERT INTO game (game_id, created_at, starting_units, status) VALUES (1, '2020-10-17 00:58:53', 100, 'waiting for players');
+INSERT INTO game (game_id, created_at, starting_units, status) VALUES (2, '2020-10-17 00:58:56', 90, 'waiting for players');
+INSERT INTO game (game_id, created_at, starting_units, status) VALUES (3, '2020-10-17 00:58:58', 80, 'in progress');
+DROP TABLE next_attack;
+CREATE TABLE next_attack (next_attack_id int NOT NULL AUTO_INCREMENT, game_id int NOT NULL, next_attack_army_id int NOT NULL, PRIMARY KEY (next_attack_id), CONSTRAINT nextattack_ix1 UNIQUE (game_id, next_attack_army_id), INDEX nextattack_fk2 (next_attack_army_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 DEFAULT COLLATE=utf8_general_ci;
+INSERT INTO next_attack (next_attack_id, game_id, next_attack_army_id) VALUES (1, 1, 3);
+INSERT INTO next_attack (next_attack_id, game_id, next_attack_army_id) VALUES (2, 2, 6);
+INSERT INTO next_attack (next_attack_id, game_id, next_attack_army_id) VALUES (3, 3, 11);
+ALTER TABLE `army` ADD CONSTRAINT army_fk1 FOREIGN KEY (`game_id`) REFERENCES `game` (`game_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `attack` ADD CONSTRAINT attack_fk1 FOREIGN KEY (`army_id`) REFERENCES `army` (`army_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `autorun` ADD CONSTRAINT autorun_fk1 FOREIGN KEY (`game_id`) REFERENCES `game` (`game_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `next_attack` ADD CONSTRAINT nextattack_fk1 FOREIGN KEY (`game_id`) REFERENCES `game` (`game_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `next_attack` ADD CONSTRAINT nextattack_fk2 FOREIGN KEY (`next_attack_army_id`) REFERENCES `army` (`army_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+DROP TRIGGER army_delete_serial_number;
+--/
+CREATE DEFINER=`root`@`localhost` TRIGGER army_delete_serial_number
+AFTER UPDATE ON 
+esagaming.army
+FOR EACH ROW delete from attack
+where army_id = new.army_id and new.current_units = 0
+/
+DROP TRIGGER army_serial_number;
+--/
+CREATE DEFINER=`root`@`localhost` TRIGGER army_serial_number
+BEFORE INSERT ON 
+esagaming.army
+FOR EACH ROW update attack
+set serial_number = serial_number + 1
+where army_id in (select army_id from army where game_id = new.game_id)
+/

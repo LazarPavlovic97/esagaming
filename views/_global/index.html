@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            {% block title %}ESAGAMING{% endblock %}
+        </title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <div>
+            <a href="{{ BASE }}">Main page</a>
+        </div>
+
+        <hr>
+
+        <div>
+            {% block main %}
+
+            {% endblock %}
+        </div>
+    </body>
+</html>

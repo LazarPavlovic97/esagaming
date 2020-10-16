@@ -1,0 +1,18 @@
+{% extends "_global/index.html" %}
+
+{% block main %}
+
+{% for allGame in allGames %}
+    <li><a href="{{ BASE }}games/{{ allGame.game_id }}">Game {{ allGame.game_id }} - starting units: {{ allGame.starting_units }} - created: {{ allGame.created_at }}</a></li>
+{% endfor %}
+
+<hr>
+
+<form method="post">
+    Input number of starting units for new game (between 80 and 100): <input type="number" name="startingUnits" min="80" max="100"><br>
+    <input type="submit" name="createGame" value="Create game">
+</form>
+
+{% block message %}{% endblock %}
+
+{% endblock %}
